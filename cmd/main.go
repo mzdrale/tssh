@@ -104,7 +104,11 @@ func searchAndSelectNode(nodes []t.Node, config *Config) (*t.Node, error) {
 			envColor = t.White // fallback
 		}
 
-		items[i] = fmt.Sprintf("%s [%s]", t.White(node.Hostname), envColor(node.Env))
+		if node.NewHostname != "" {
+			items[i] = fmt.Sprintf("%s  %s [%s]", t.Yellow(node.NewHostname), t.Grey("("+node.Hostname+")"), envColor(node.Env))
+		} else {
+			items[i] = fmt.Sprintf("%s [%s]", t.White(node.Hostname), envColor(node.Env))
+		}
 	}
 
 	prompt := promptui.Select{
@@ -112,9 +116,11 @@ func searchAndSelectNode(nodes []t.Node, config *Config) (*t.Node, error) {
 		Items: items,
 		Searcher: func(input string, index int) bool {
 			node := nodes[index]
-			name := strings.ToLower(node.Hostname)
 			input = strings.ToLower(input)
-			return strings.Contains(name, input)
+			if strings.Contains(strings.ToLower(node.Hostname), input) {
+				return true
+			}
+			return strings.Contains(strings.ToLower(node.NewHostname), input)
 		},
 		Size: 30,
 	}
@@ -178,9 +184,11 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Find node by hostname
+		nodes = t.AssignZoneAliases(nodes)
+
+		// Find node by exact hostname or alias.
 		for i, node := range nodes {
-			if node.Hostname == targetHostname {
+			if node.Hostname == targetHostname || node.NewHostname == targetHostname {
 				selectedNode = &nodes[i]
 				break
 			}
@@ -192,7 +200,8 @@ func main() {
 			searchTerm := strings.ToLower(targetHostname)
 
 			for _, node := range nodes {
-				if strings.Contains(strings.ToLower(node.Hostname), searchTerm) {
+				if strings.Contains(strings.ToLower(node.Hostname), searchTerm) ||
+					strings.Contains(strings.ToLower(node.NewHostname), searchTerm) {
 					filteredNodes = append(filteredNodes, node)
 				}
 			}
@@ -269,17 +278,12 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Sort nodes by hostname
-		if err == nil {
-			sort.Slice(nodes, func(i, j int) bool {
-				return nodes[i].Hostname < nodes[j].Hostname
-			})
-		}
+		nodes = t.AssignZoneAliases(nodes)
 
-		if err != nil {
-			fmt.Print(t.Fatal("\U00002717 Unable to get nodes: %s\n\n", err.Error()))
-			os.Exit(1)
-		}
+		// Sort nodes by hostname
+		sort.Slice(nodes, func(i, j int) bool {
+			return nodes[i].Hostname < nodes[j].Hostname
+		})
 
 		selectedNode, err = searchAndSelectNode(nodes, config)
 		if err != nil {
@@ -295,6 +299,9 @@ func main() {
 	}
 
 	fmt.Print(t.Grey("Selected node: \n\n"))
+	if selectedNode.NewHostname != "" {
+		fmt.Printf(t.KeyText("   Alias:    %s\n"), t.Yellow(selectedNode.NewHostname))
+	}
 	fmt.Printf(t.KeyText("   Hostname: %s\n"), t.Yellow(selectedNode.Hostname))
 	fmt.Printf(t.KeyText("   UUID: %s\n"), t.White(selectedNode.UUID))
 	fmt.Printf(t.KeyText("   Env: %s\n"), t.White(selectedNode.Env))

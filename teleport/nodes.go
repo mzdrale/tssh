@@ -152,22 +152,46 @@ func GroupNodesByEnvAndService(nodes []Node) map[string]map[string][]Node {
 	return grouped
 }
 
-func DetermineZonesForGroup(nodes []Node) {
-	// Sort nodes by the third digit of their IP addresses
-	sort.Slice(nodes, func(i, j int) bool {
-		ipPartsI := strings.Split(ParseName(nodes[i].Hostname).IP, "-")
-		ipPartsJ := strings.Split(ParseName(nodes[j].Hostname).IP, "-")
-		thirdDigitI, _ := strconv.Atoi(ipPartsI[2])
-		thirdDigitJ, _ := strconv.Atoi(ipPartsJ[2])
-		return thirdDigitI < thirdDigitJ
-	})
-
-	// Assign zones based on the sorted order
+// AssignZoneAliases groups nodes by env+service, sorts each group by the 3rd
+// octet of the embedded IP address, and sets NewHostname to a human-friendly
+// alias of the form "<env>-nc2-<service>-<a|b|c>" on every node that can be
+// parsed. Nodes whose hostname does not match the expected pattern are left
+// unchanged. The modified slice is returned.
+func AssignZoneAliases(nodes []Node) []Node {
 	zones := []string{"a", "b", "c"}
+
+	// Collect indices per env+service key.
+	grouped := make(map[string][]int)
 	for i, node := range nodes {
-		zone := zones[i%len(zones)]
-		fmt.Printf("Node UUID: %s, Hostname: %s, Zone: %s\n", node.UUID, node.Hostname, zone)
+		parsed := ParseName(node.Hostname)
+		if parsed.Env == "" {
+			continue
+		}
+		key := parsed.Env + "|" + parsed.Service
+		grouped[key] = append(grouped[key], i)
 	}
+
+	for _, indices := range grouped {
+		// Sort by the 3rd octet (index 2) of the dash-encoded IP.
+		sort.Slice(indices, func(a, b int) bool {
+			ipA := strings.Split(ParseName(nodes[indices[a]].Hostname).IP, "-")
+			ipB := strings.Split(ParseName(nodes[indices[b]].Hostname).IP, "-")
+			if len(ipA) < 3 || len(ipB) < 3 {
+				return false
+			}
+			thirdA, _ := strconv.Atoi(ipA[2])
+			thirdB, _ := strconv.Atoi(ipB[2])
+			return thirdA < thirdB
+		})
+
+		for i, idx := range indices {
+			parsed := ParseName(nodes[idx].Hostname)
+			zone := zones[i%len(zones)]
+			nodes[idx].NewHostname = fmt.Sprintf("%s-nc2-%s-%s", parsed.Env, parsed.Service, zone)
+		}
+	}
+
+	return nodes
 }
 
 func SaveNodesToFile(nodes []Node, filename string) error {
