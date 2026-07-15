@@ -1,0 +1,6 @@
+tssh
+tssh-*
+*.log
+*.log.*
+.DS_Store
+
