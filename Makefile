@@ -24,16 +24,16 @@ build\:macos\:arm64:
 
 .PHONY: build\:macos\:amd64
 build\:macos\:amd64:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ${NAME}-${VERSION}-macos-amd64 -ldflags="-s -w -X main.binName=${NAME} -X main.version=${VERSION}"
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ${NAME}-${VERSION}-macos-amd64 -ldflags="-s -w -X main.binName=${NAME} -X main.version=${VERSION}" ./cmd
 
 
 .PHONY: build\:linux\:arm64
 build\:linux\:arm64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ${NAME}-${VERSION}-linux-arm64 -ldflags="-s -w -X main.binName=${NAME} -X main.version=${VERSION}"
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ${NAME}-${VERSION}-linux-arm64 -ldflags="-s -w -X main.binName=${NAME} -X main.version=${VERSION}" ./cmd
 
 .PHONY: build\:linux\:amd64
 build\:linux\:amd64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${NAME}-${VERSION}-linux-amd64 -ldflags="-s -w -X main.binName=${NAME} -X main.version=${VERSION}"
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${NAME}-${VERSION}-linux-amd64 -ldflags="-s -w -X main.binName=${NAME} -X main.version=${VERSION}" ./cmd
 
 .PHONY: help
 help:
