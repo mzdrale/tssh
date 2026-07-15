@@ -100,7 +100,10 @@ func GetNodes(proxy string) ([]Node, error) {
 }
 
 func ParseName(origName string) ParsedName {
-	pattern := `^(?P<env>[^-]+)-nc2-(?P<service>[^-]+(?:-[^-]+)*)-(?P<ip>\d+-\d+-\d+-\d+)$`
+	// service name is letters/dashes; the first IP octet may be directly concatenated
+	// to the service name (e.g. "consul10-246-49-234" → service=consul, ip=10-246-49-234)
+	// or separated by a dash (e.g. "consul-10-246-49-234").  The -? makes the separator optional.
+	pattern := `^(?P<env>[^-]+)-nc2-(?P<service>[a-zA-Z][a-zA-Z-]*?)-?(?P<ip>\d+-\d+-\d+-\d+)$`
 	re := regexp.MustCompile(pattern)
 
 	// Match the pattern and extract the components
