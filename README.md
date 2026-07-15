@@ -38,25 +38,23 @@ make build macos:arm64
 
 ### Configuration
 
-Create a config file at `~/.config/tssh/config.toml`:
+Create a config file at `~/.config/tssh/config.toml`. Example:
 
 ```toml
 [default]
-    profile = "nc2"
+    profile = "myprofile"
 
 [profiles]
-    [profiles.nc2]
-        proxy = "nutanix.teleport.sh"
+    [profiles.myprofile]
+        proxy = "mycompany.teleport.sh"
         username = "your.username"
 
 [environments]
-    [environments.NC2_Dev]
+    [environments.teleport_env_dev]
         color = "Green"
-    [environments.NC2-Staging]
+    [environments.teleport_env_staging]
         color = "Teal"
-    [environments.NC2-Security]
-        color = "Magenta"
-    [environments.NC2-Prod]
+    [environments.teleport_env_prod]
         color = "Red"
 ```
 
