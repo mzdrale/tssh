@@ -190,7 +190,7 @@ func AssignZoneAliases(nodes []Node) []Node {
 		for i, idx := range indices {
 			parsed := ParseName(nodes[idx].Hostname)
 			zone := zones[i%len(zones)]
-			nodes[idx].NewHostname = fmt.Sprintf("%s-nc2-%s-%s", parsed.Env, parsed.Service, zone)
+			nodes[idx].NewHostname = fmt.Sprintf("%s-%s-%s", parsed.Env, parsed.Service, zone)
 		}
 	}
 
