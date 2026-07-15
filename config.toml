@@ -1,0 +1,20 @@
+[default]
+# Default profile
+profile = "nc2"
+# Cache validity in hours, after we'll fetch nodes list from Teleport server
+cache_validity = "24"
+
+[profiles]
+  [profiles.nc2]
+  proxy = "nutanix.teleport.sh"
+  username = "miroslav.zdrale"
+
+[environments]
+  [environments.NC2_Dev]
+  color = "Green"
+  [environments.NC2-Staging]
+  color = "Teal"
+  [environments.NC2-Security]
+  color = "Magenta"
+  [environments.NC2-Prod]
+  color = "Red"

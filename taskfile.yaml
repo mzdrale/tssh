@@ -1,0 +1,34 @@
+version: "3"
+
+env:
+  BIN_NAME: tssh
+  REVISION:
+    sh: test -z ${REVISION} && git rev-parse --short HEAD || echo ${REVISION}
+  GOOS: "{{ default OS .GOOS }}"
+  GOARCH: "{{ default ARCH .GOARCH }}"
+  GOLDFLAGS: -s -w -X main.binName={{ .BIN_NAME }} -X main.version={{ .REVISION }}
+  GOVERSION: 1.22
+
+tasks:
+  default:
+    - task: build
+
+  build:
+    desc: Build go binary ({{ .GOOS }}/{{ .GOARCH }})
+    aliases: [b]
+    cmds:
+      # - go get -d
+      - CGO_ENABLED=0 go build -ldflags="{{ .GOLDFLAGS }}" -o {{ .BIN_NAME }} cmd/tssh/main.go
+
+  update:
+    desc: Update go packages and dependencies to their latest versions
+    aliases: [u]
+    cmds:
+      - go get -u
+
+  run:
+    desc: Compile and run go code
+    aliases: [r]
+    silent: true
+    cmds:
+      - go run -ldflags="{{ .GOLDFLAGS }}" cmd/tssh
