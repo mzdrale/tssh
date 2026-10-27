@@ -7,7 +7,7 @@ env:
   GOOS: "{{ default OS .GOOS }}"
   GOARCH: "{{ default ARCH .GOARCH }}"
   GOLDFLAGS: -s -w -X main.binName={{ .BIN_NAME }} -X main.version={{ .REVISION }}
-  GOVERSION: 1.22
+  GOVERSION: 1.27
 
 tasks:
   default:
